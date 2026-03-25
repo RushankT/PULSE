@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Header } from "@/components/Header";
 import { KPICards } from "@/components/KPICards";
@@ -83,6 +83,7 @@ function exportCSV(data, platforms) {
 
 export default function Dashboard() {
   const { data, loading, error, refresh, platforms } = useYouTubeData(300000);
+  const [activeTab, setActiveTab] = useState("youtube");
 
   const anomalies = useMemo(() => detectAnomalies(data?.videos), [data?.videos]);
   const handleExport = useCallback(() => exportCSV(data, platforms), [data, platforms]);
@@ -143,7 +144,7 @@ export default function Dashboard() {
             </div>
 
             {/* Platform Tabs */}
-            <Tabs defaultValue="youtube" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList data-testid="tab-navigation" className="h-auto p-1 bg-muted/50 border border-border rounded-lg flex-wrap gap-0.5">
                 <TabsTrigger value="youtube" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-youtube">
                   <Youtube className="w-3.5 h-3.5" /> YouTube
@@ -160,16 +161,16 @@ export default function Dashboard() {
               </TabsList>
 
               <TabsContent value="youtube" className="mt-4">
-                <YouTubeTab data={data} />
+                {activeTab === "youtube" && <YouTubeTab data={data} />}
               </TabsContent>
               <TabsContent value="social" className="mt-4">
-                <SocialTab data={platforms?.social} />
+                {activeTab === "social" && <SocialTab data={platforms?.social} />}
               </TabsContent>
               <TabsContent value="entertainment" className="mt-4">
-                <EntertainmentTab entertainment={platforms?.entertainment} music={platforms?.music} />
+                {activeTab === "entertainment" && <EntertainmentTab entertainment={platforms?.entertainment} music={platforms?.music} />}
               </TabsContent>
               <TabsContent value="news" className="mt-4">
-                <NewsTab data={platforms?.news} />
+                {activeTab === "news" && <NewsTab data={platforms?.news} />}
               </TabsContent>
             </Tabs>
           </div>

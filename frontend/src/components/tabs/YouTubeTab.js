@@ -8,12 +8,14 @@ import { CompetitiveTab } from "@/components/tabs/CompetitiveTab";
 import { LayoutDashboard, BarChart3, Layers, TrendingUp, Target } from "lucide-react";
 
 export function YouTubeTab({ data }) {
+  const [activeTab, setActiveTab] = useState("yt-overview");
+
   if (!data) return <p className="text-muted-foreground p-4">Loading YouTube data...</p>;
 
   return (
     <div data-testid="youtube-tab" className="space-y-6">
       {/* Inner sub-tabs for YouTube analytics */}
-      <Tabs defaultValue="yt-overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="h-auto p-1 bg-muted/30 border border-border rounded-lg flex-wrap gap-0.5">
           <TabsTrigger value="yt-overview" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="yt-sub-overview">
             <LayoutDashboard className="w-3 h-3" /> Overview
@@ -33,19 +35,19 @@ export function YouTubeTab({ data }) {
         </TabsList>
 
         <TabsContent value="yt-overview" className="mt-4">
-          <OverviewTab videos={data.videos} insights={data.insights} />
+          {activeTab === "yt-overview" && <OverviewTab videos={data.videos} insights={data.insights} />}
         </TabsContent>
         <TabsContent value="yt-engagement" className="mt-4">
-          <EngagementTab videos={data.videos} engagementDistribution={data.engagement_distribution} insights={data.insights} />
+          {activeTab === "yt-engagement" && <EngagementTab videos={data.videos} engagementDistribution={data.engagement_distribution} insights={data.insights} />}
         </TabsContent>
         <TabsContent value="yt-categories" className="mt-4">
-          <CategoryTab categories={data.categories} demographics={data.demographics} heatmap={data.heatmap} insights={data.insights} />
+          {activeTab === "yt-categories" && <CategoryTab categories={data.categories} demographics={data.demographics} heatmap={data.heatmap} insights={data.insights} />}
         </TabsContent>
         <TabsContent value="yt-growth" className="mt-4">
-          <GrowthTab growthData={data.growth_data} insights={data.insights} />
+          {activeTab === "yt-growth" && <GrowthTab growthData={data.growth_data} insights={data.insights} />}
         </TabsContent>
         <TabsContent value="yt-competitive" className="mt-4">
-          <CompetitiveTab competitive={data.competitive} insights={data.insights} />
+          {activeTab === "yt-competitive" && <CompetitiveTab competitive={data.competitive} insights={data.insights} />}
         </TabsContent>
       </Tabs>
     </div>

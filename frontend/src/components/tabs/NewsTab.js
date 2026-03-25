@@ -122,7 +122,7 @@ export function NewsTab({ data }) {
               return (
                 <div key={i} data-testid={`news-article-${i}`} className="flex gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
                   {article.image && (
-                    <img src={article.image} alt="" className="w-20 h-14 rounded object-cover shrink-0" loading="lazy" onError={(e) => { e.target.style.display = "none"; }} />
+                    <img src={article.image} alt="" className="w-20 h-14 rounded object-cover shrink-0" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.target.style.display = "none"; }} />
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">

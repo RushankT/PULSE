@@ -1,45 +1,42 @@
-# Data Velocity - Real-Time Multi-Platform Insights Platform
+# PULSE - Real-Time Multi-Platform Insights Platform
 
 ## Original Problem Statement
-Build a PRODUCTION-GRADE real-time insights platform with multiple data sources (YouTube, Twitter, TMDB, News, Spotify), derived metrics, anomaly detection, 8 strategic tabs, search/filter, CSV export, dark/light mode.
+Build a production-grade real-time insights platform with multiple data sources. Named PULSE. Features: Home page with product description, YouTube analytics (consolidated into one tab with 5 nested sub-tabs), Social Trends (Twitter), Entertainment (TMDB + Spotify), News (News API). Dark/light mode, anomaly detection, CSV export, no auth.
 
 ## Architecture
-- **Backend**: FastAPI (Python) + MongoDB + YouTube API + TMDB API + News API + Spotify API
+- **Backend**: FastAPI + MongoDB + YouTube API + TMDB API + News API + Spotify API
 - **Frontend**: React + Recharts + Tailwind CSS + Shadcn UI
-- **Data Sources**: YouTube (live), TMDB (live), News API (live), Spotify (live), Twitter/X (MOCKED - paid API)
-- **Features**: Anomaly detection, search/filter, CSV export, 5-min auto-refresh
+- **Routes**: "/" = Home page, "/dashboard" = Dashboard
 
-## What's Been Implemented (Feb 25, 2026)
-### Phase 1 - Core YouTube Dashboard
-- 4 KPI cards, 5 analytical tabs, live YouTube data (50 videos)
-- Derived metrics: engagement rate, quality score, velocity, revenue potential, growth momentum
-- Charts: bar, scatter, line, pie, radar, heatmap
+## What's Been Implemented
+### Phase 1 - Core YouTube Dashboard (Feb 25, 2026)
+- 4 KPI cards, live YouTube data (50 videos), derived metrics
 
-### Phase 2 - Multi-Platform + Features
-- 3 new data sources: TMDB (15 movies + 15 TV), News API (25 articles), Spotify (25 tracks)
-- Twitter/X (simulated - API requires paid tier)
-- 3 new tabs: Social Pulse, Entertainment, News Feed
-- Anomaly detection with outlier alerts
-- Search/filter across all video content
-- CSV export with multi-platform data
-- "5 sources" badge in header
+### Phase 2 - Multi-Platform (Feb 25, 2026)
+- TMDB, News API, Spotify integrations, Twitter/X simulated
+- Anomaly detection, CSV export
+
+### Phase 3 - Restructure to PULSE (Feb 25, 2026)
+- Renamed to PULSE
+- Added Home page at / with product description, features, data sources
+- Consolidated 5 YouTube tabs into single YouTube tab with nested sub-tabs
+- Removed search bar
+- Dashboard at /dashboard with 4 platform tabs: YouTube, Social, Entertainment, News
+- Home link in dashboard header
+
+## Data Sources
+1. YouTube API (LIVE) - 50 trending videos
+2. TMDB (LIVE) - 15 movies + 15 TV shows
+3. News API (LIVE) - 25+ articles with sentiment
+4. Spotify (LIVE) - 25 trending tracks
+5. Twitter/X (MOCKED) - Simulated trends (API requires paid tier)
 
 ## All Tests Passing
-- Backend: 100% (9 API endpoints)
-- Frontend: 100% (8 tabs, all features)
-- Integration: 100%
-- Mobile: 100%
+- Backend: 100%
+- Frontend: 95-100% (minor chart dimension warnings fixed)
 
 ## Backlog
 ### P1
-- Predictive forecasting with trend lines
-- Correlation analysis across platforms
-- Custom threshold configuration
-- Comparison mode (side-by-side)
-
+- Predictive forecasting, comparison mode, custom thresholds
 ### P2
-- Google Trends integration
-- Reddit trends
-- Machine learning anomaly detection
-- Webhook alerts
-- User preferences/saved views
+- Google Trends, Reddit, webhook alerts, user preferences
