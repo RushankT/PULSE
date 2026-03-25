@@ -7,6 +7,8 @@ export function useYouTubeData(refreshInterval = 300000) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [platforms, setPlatforms] = useState({ social: null, entertainment: null, news: null, music: null });
+  const [platformsLoading, setPlatformsLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -34,11 +36,24 @@ export function useYouTubeData(refreshInterval = 300000) {
     }
   }, []);
 
+  const fetchPlatforms = useCallback(async () => {
+    try {
+      setPlatformsLoading(true);
+      const res = await axios.get(`${API}/trends/all`);
+      setPlatforms(res.data);
+    } catch (err) {
+      console.error("Failed to fetch platform data:", err);
+    } finally {
+      setPlatformsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
-    const id = setInterval(fetchData, refreshInterval);
+    fetchPlatforms();
+    const id = setInterval(() => { fetchData(); fetchPlatforms(); }, refreshInterval);
     return () => clearInterval(id);
-  }, [fetchData, refreshInterval]);
+  }, [fetchData, fetchPlatforms, refreshInterval]);
 
-  return { data, loading, error, refresh };
+  return { data, loading, error, refresh, platforms, platformsLoading };
 }

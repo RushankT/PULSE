@@ -1,8 +1,8 @@
 import { useTheme } from "@/context/ThemeContext";
-import { Moon, Sun, RefreshCw, Radio } from "lucide-react";
+import { Moon, Sun, RefreshCw, Radio, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, loading }) {
+export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, loading, onExport, platformCount }) {
   const { theme, toggleTheme } = useTheme();
 
   const formatTime = (iso) => {
@@ -50,10 +50,27 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
             {dataSource === "live" ? "Live Data" : "Simulated"}
           </Badge>
 
+          {/* Platform count */}
+          {platformCount > 1 && (
+            <Badge variant="outline" className="text-[10px] border-[hsl(234,85%,66%)]/50 text-[hsl(234,85%,66%)] hidden sm:inline-flex">
+              {platformCount} sources
+            </Badge>
+          )}
+
           {/* Last updated */}
           <span className="text-[11px] text-muted-foreground hidden sm:inline">
             Updated {formatTime(lastUpdated)} · {Math.round((refreshInterval || 300) / 60)}m refresh
           </span>
+
+          {/* Export */}
+          <button
+            data-testid="export-button"
+            onClick={onExport}
+            className="w-8 h-8 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
+            title="Export to CSV"
+          >
+            <Download className="w-3.5 h-3.5" strokeWidth={2} />
+          </button>
 
           {/* Refresh */}
           <button

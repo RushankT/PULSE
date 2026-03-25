@@ -118,6 +118,108 @@ class YouTubeAnalyticsAPITester:
         """Test history endpoint"""
         return self.run_test("History Data", "GET", "history", 200)
 
+    def test_social_trends_endpoint(self):
+        """Test social trends endpoint (Twitter/X - MOCKED)"""
+        success, data = self.run_test("Social Trends (Twitter/X)", "GET", "trends/social", 200, timeout=30)
+        
+        if success and data:
+            # Validate required fields for social trends
+            required_fields = ["trends", "insights", "data_source"]
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                print(f"⚠️  Missing social trends fields: {missing_fields}")
+            else:
+                print(f"✅ Social trends structure validated")
+                if "note" in data:
+                    print(f"📝 Note: {data['note']}")
+                print(f"📊 Data source: {data.get('data_source', 'unknown')}")
+                if "trends" in data and isinstance(data["trends"], list):
+                    print(f"📈 Trends count: {len(data['trends'])}")
+        
+        return success, data
+
+    def test_entertainment_trends_endpoint(self):
+        """Test entertainment trends endpoint (TMDB)"""
+        success, data = self.run_test("Entertainment Trends (TMDB)", "GET", "trends/entertainment", 200, timeout=30)
+        
+        if success and data:
+            # Validate required fields for entertainment trends
+            required_fields = ["movies", "tv_shows", "genre_breakdown", "insights", "data_source"]
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                print(f"⚠️  Missing entertainment trends fields: {missing_fields}")
+            else:
+                print(f"✅ Entertainment trends structure validated")
+                print(f"📊 Data source: {data.get('data_source', 'unknown')}")
+                if "movies" in data and isinstance(data["movies"], list):
+                    print(f"🎬 Movies count: {len(data['movies'])}")
+                if "tv_shows" in data and isinstance(data["tv_shows"], list):
+                    print(f"📺 TV shows count: {len(data['tv_shows'])}")
+        
+        return success, data
+
+    def test_news_trends_endpoint(self):
+        """Test news trends endpoint"""
+        success, data = self.run_test("News Trends", "GET", "trends/news", 200, timeout=30)
+        
+        if success and data:
+            # Validate required fields for news trends
+            required_fields = ["articles", "source_breakdown", "sentiment_summary", "insights", "data_source"]
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                print(f"⚠️  Missing news trends fields: {missing_fields}")
+            else:
+                print(f"✅ News trends structure validated")
+                print(f"📊 Data source: {data.get('data_source', 'unknown')}")
+                if "articles" in data and isinstance(data["articles"], list):
+                    print(f"📰 Articles count: {len(data['articles'])}")
+        
+        return success, data
+
+    def test_music_trends_endpoint(self):
+        """Test music trends endpoint (Spotify)"""
+        success, data = self.run_test("Music Trends (Spotify)", "GET", "trends/music", 200, timeout=30)
+        
+        if success and data:
+            # Validate required fields for music trends
+            required_fields = ["tracks", "genre_breakdown", "insights", "data_source"]
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                print(f"⚠️  Missing music trends fields: {missing_fields}")
+            else:
+                print(f"✅ Music trends structure validated")
+                print(f"📊 Data source: {data.get('data_source', 'unknown')}")
+                if "tracks" in data and isinstance(data["tracks"], list):
+                    print(f"🎵 Tracks count: {len(data['tracks'])}")
+        
+        return success, data
+
+    def test_all_trends_endpoint(self):
+        """Test combined trends endpoint"""
+        success, data = self.run_test("All Trends Combined", "GET", "trends/all", 200, timeout=45)
+        
+        if success and data:
+            # Validate required fields for combined trends
+            required_fields = ["social", "entertainment", "news", "music"]
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                print(f"⚠️  Missing combined trends fields: {missing_fields}")
+            else:
+                print(f"✅ Combined trends structure validated")
+                # Count total data sources
+                active_sources = 0
+                for source in required_fields:
+                    if data.get(source) and data[source].get("data_source") != "unavailable":
+                        active_sources += 1
+                print(f"📊 Active data sources: {active_sources}/4")
+        
+        return success, data
+
     def validate_dashboard_data_structure(self, data):
         """Validate the structure of dashboard data"""
         validation_results = []
@@ -173,6 +275,17 @@ def main():
     
     # History endpoint
     tester.test_history_endpoint()
+    
+    # Platform-specific endpoints
+    print("\n🌐 Testing Platform-Specific Endpoints...")
+    tester.test_social_trends_endpoint()
+    tester.test_entertainment_trends_endpoint()
+    tester.test_news_trends_endpoint()
+    tester.test_music_trends_endpoint()
+    
+    # Combined trends endpoint
+    print("\n🔄 Testing Combined Trends Endpoint...")
+    tester.test_all_trends_endpoint()
     
     # Print final results
     print("\n" + "=" * 50)
