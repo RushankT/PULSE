@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/ThemeContext";
-import { Moon, Sun, RefreshCw, Radio, Download } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Moon, Sun, RefreshCw, Radio, Download, Home } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, loading, onExport, platformCount }) {
@@ -19,17 +20,19 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[hsl(234,85%,66%)] flex items-center justify-center">
-            <Radio className="w-4 h-4 text-white" strokeWidth={2} />
-          </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight leading-none">
-              Data Velocity
-            </h1>
-            <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
-              Real-Time Insights Platform
-            </p>
-          </div>
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-lg bg-[hsl(234,85%,66%)] flex items-center justify-center">
+              <Radio className="w-4 h-4 text-white" strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight leading-none">
+                PULSE
+              </h1>
+              <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+                Real-Time Insights Platform
+              </p>
+            </div>
+          </Link>
         </div>
 
         {/* Right */}
@@ -71,6 +74,16 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
           >
             <Download className="w-3.5 h-3.5" strokeWidth={2} />
           </button>
+
+          {/* Home link */}
+          <Link
+            to="/"
+            data-testid="home-link"
+            className="w-8 h-8 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
+            title="Back to home"
+          >
+            <Home className="w-3.5 h-3.5" strokeWidth={2} />
+          </Link>
 
           {/* Refresh */}
           <button

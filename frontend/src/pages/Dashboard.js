@@ -1,13 +1,8 @@
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Header } from "@/components/Header";
 import { KPICards } from "@/components/KPICards";
-import { SearchFilter } from "@/components/SearchFilter";
-import { OverviewTab } from "@/components/tabs/OverviewTab";
-import { EngagementTab } from "@/components/tabs/EngagementTab";
-import { CategoryTab } from "@/components/tabs/CategoryTab";
-import { GrowthTab } from "@/components/tabs/GrowthTab";
-import { CompetitiveTab } from "@/components/tabs/CompetitiveTab";
+import { YouTubeTab } from "@/components/tabs/YouTubeTab";
 import { SocialTab } from "@/components/tabs/SocialTab";
 import { EntertainmentTab } from "@/components/tabs/EntertainmentTab";
 import { NewsTab } from "@/components/tabs/NewsTab";
@@ -15,8 +10,8 @@ import { useYouTubeData } from "@/hooks/useYouTubeData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
-  AlertCircle, LayoutDashboard, BarChart3, Layers, TrendingUp,
-  Target, MessageSquare, Film, Newspaper, Download, AlertTriangle
+  AlertCircle, Youtube, MessageSquare, Film, Newspaper,
+  Download, AlertTriangle
 } from "lucide-react";
 
 function LoadingSkeleton() {
@@ -45,7 +40,6 @@ function ErrorState({ error, onRetry }) {
   );
 }
 
-// Anomaly detection
 function detectAnomalies(videos) {
   if (!videos?.length) return [];
   const rates = videos.map((v) => v.engagement_rate);
@@ -57,26 +51,15 @@ function detectAnomalies(videos) {
     .sort((a, b) => b.anomalyScore - a.anomalyScore);
 }
 
-// CSV export
 function exportCSV(data, platforms) {
   if (!data?.videos) return;
   const headers = ["Title", "Channel", "Category", "Views", "Likes", "Comments", "Engagement Rate", "Quality Score", "Growth Momentum", "Revenue Potential", "Health"];
   const rows = data.videos.map((v) => [
-    `"${v.title.replace(/"/g, '""')}"`,
-    `"${v.channel}"`,
-    v.category,
-    v.views,
-    v.likes,
-    v.comments,
-    v.engagement_rate,
-    v.quality_score,
-    v.growth_momentum,
-    v.revenue_potential,
-    v.health,
+    `"${v.title.replace(/"/g, '""')}"`, `"${v.channel}"`, v.category,
+    v.views, v.likes, v.comments, v.engagement_rate, v.quality_score,
+    v.growth_momentum, v.revenue_potential, v.health,
   ]);
   let csv = headers.join(",") + "\n" + rows.map((r) => r.join(",")).join("\n");
-
-  // Add platform data
   if (platforms?.entertainment?.movies?.length) {
     csv += "\n\nTMDB Trending Movies\nTitle,Rating,Popularity,Genres";
     platforms.entertainment.movies.forEach((m) => {
@@ -89,35 +72,21 @@ function exportCSV(data, platforms) {
       csv += `\n"${a.title.replace(/"/g, '""')}","${a.source}",${a.sentiment_label}`;
     });
   }
-
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `data-velocity-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `pulse-export-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
 export default function Dashboard() {
-  const { data, loading, error, refresh, platforms, platformsLoading } = useYouTubeData(300000);
-  const [search, setSearch] = useState("");
+  const { data, loading, error, refresh, platforms } = useYouTubeData(300000);
 
-  // Filter videos by search
-  const filteredVideos = useMemo(() => {
-    if (!data?.videos || !search) return data?.videos;
-    const q = search.toLowerCase();
-    return data.videos.filter(
-      (v) => v.title.toLowerCase().includes(q) || v.channel.toLowerCase().includes(q) || v.category.toLowerCase().includes(q)
-    );
-  }, [data?.videos, search]);
-
-  // Anomalies
   const anomalies = useMemo(() => detectAnomalies(data?.videos), [data?.videos]);
-
   const handleExport = useCallback(() => exportCSV(data, platforms), [data, platforms]);
 
-  // Platform data source counts
   const platformCount = useMemo(() => {
     let count = 0;
     if (data?.data_source) count++;
@@ -167,34 +136,17 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Search + Data Freshness */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="w-full sm:max-w-sm">
-                <SearchFilter value={search} onChange={setSearch} placeholder="Search videos, channels, categories..." />
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
-                <span className={`w-1.5 h-1.5 rounded-full ${data?.data_source === "live" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-                {platformCount} data source{platformCount !== 1 ? "s" : ""} active · Updated {data?.last_updated ? new Date(data.last_updated).toLocaleTimeString() : "—"} · Auto-refresh 5m
-              </div>
+            {/* Data freshness */}
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className={`w-1.5 h-1.5 rounded-full ${data?.data_source === "live" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+              {platformCount} data source{platformCount !== 1 ? "s" : ""} active · Updated {data?.last_updated ? new Date(data.last_updated).toLocaleTimeString() : "—"} · Auto-refresh 5m
             </div>
 
-            {/* Tab Navigation */}
-            <Tabs defaultValue="overview" className="w-full">
+            {/* Platform Tabs */}
+            <Tabs defaultValue="youtube" className="w-full">
               <TabsList data-testid="tab-navigation" className="h-auto p-1 bg-muted/50 border border-border rounded-lg flex-wrap gap-0.5">
-                <TabsTrigger value="overview" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-overview">
-                  <LayoutDashboard className="w-3.5 h-3.5" /> Overview
-                </TabsTrigger>
-                <TabsTrigger value="engagement" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-engagement">
-                  <BarChart3 className="w-3.5 h-3.5" /> Engagement
-                </TabsTrigger>
-                <TabsTrigger value="category" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-category">
-                  <Layers className="w-3.5 h-3.5" /> Categories
-                </TabsTrigger>
-                <TabsTrigger value="growth" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-growth">
-                  <TrendingUp className="w-3.5 h-3.5" /> Growth
-                </TabsTrigger>
-                <TabsTrigger value="competitive" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-competitive">
-                  <Target className="w-3.5 h-3.5" /> Competitive
+                <TabsTrigger value="youtube" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-youtube">
+                  <Youtube className="w-3.5 h-3.5" /> YouTube
                 </TabsTrigger>
                 <TabsTrigger value="social" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid="tab-social">
                   <MessageSquare className="w-3.5 h-3.5" /> Social
@@ -207,20 +159,8 @@ export default function Dashboard() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="mt-4">
-                <OverviewTab videos={filteredVideos} insights={data?.insights} />
-              </TabsContent>
-              <TabsContent value="engagement" className="mt-4">
-                <EngagementTab videos={filteredVideos} engagementDistribution={data?.engagement_distribution} insights={data?.insights} />
-              </TabsContent>
-              <TabsContent value="category" className="mt-4">
-                <CategoryTab categories={data?.categories} demographics={data?.demographics} heatmap={data?.heatmap} insights={data?.insights} />
-              </TabsContent>
-              <TabsContent value="growth" className="mt-4">
-                <GrowthTab growthData={data?.growth_data} insights={data?.insights} />
-              </TabsContent>
-              <TabsContent value="competitive" className="mt-4">
-                <CompetitiveTab competitive={data?.competitive} insights={data?.insights} />
+              <TabsContent value="youtube" className="mt-4">
+                <YouTubeTab data={data} />
               </TabsContent>
               <TabsContent value="social" className="mt-4">
                 <SocialTab data={platforms?.social} />

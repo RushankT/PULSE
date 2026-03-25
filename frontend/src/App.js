@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
 
 function App() {
@@ -11,7 +12,8 @@ function App() {
         <div className="App">
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
           </BrowserRouter>
         </div>
