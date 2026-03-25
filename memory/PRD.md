@@ -1,51 +1,45 @@
-# Data Velocity - Real-Time YouTube Insights Platform
+# Data Velocity - Real-Time Multi-Platform Insights Platform
 
 ## Original Problem Statement
-Build a PRODUCTION-GRADE real-time insights and analytics platform pulling LIVE data from YouTube API v3 (trending videos, engagement metrics). Features: 5 strategic tabs, KPI cards, derived metrics, dark/light mode, mobile responsive, insight callouts.
+Build a PRODUCTION-GRADE real-time insights platform with multiple data sources (YouTube, Twitter, TMDB, News, Spotify), derived metrics, anomaly detection, 8 strategic tabs, search/filter, CSV export, dark/light mode.
 
 ## Architecture
-- **Backend**: FastAPI (Python) + MongoDB + YouTube Data API v3
+- **Backend**: FastAPI (Python) + MongoDB + YouTube API + TMDB API + News API + Spotify API
 - **Frontend**: React + Recharts + Tailwind CSS + Shadcn UI
-- **Data Flow**: YouTube API → Backend (compute derived metrics) → Frontend (visualize)
-- **Caching**: Server-side 5-min TTL cache, MongoDB snapshots for historical data
-
-## User Personas
-1. **Executives**: KPI cards, high-level insights, strategic positioning
-2. **Analysts**: Deep engagement analytics, scatter plots, distributions
-3. **Operators**: Real-time overview, health indicators, anomaly alerts
-
-## Core Requirements
-- Live YouTube trending data (50 videos)
-- 4 KPI cards (Total Activity, Engagement Quality, Growth Velocity, Opportunity Index)
-- 5 tabs: Overview, Engagement, Categories, Growth, Competitive
-- Dark/light mode with system preference detection
-- Mobile responsive
-- Insight callouts on every section
-- Fallback to simulated data if API fails
+- **Data Sources**: YouTube (live), TMDB (live), News API (live), Spotify (live), Twitter/X (MOCKED - paid API)
+- **Features**: Anomaly detection, search/filter, CSV export, 5-min auto-refresh
 
 ## What's Been Implemented (Feb 25, 2026)
-- Full backend with YouTube API integration + analytics engine + fallback data
-- Full frontend with 5 strategic tabs, all charts (bar, scatter, line, pie, radar, heatmap)
-- System preference dark/light mode toggle
-- Live data badge with refresh capability
-- All tests passing (100% backend + frontend + integration)
-- Derived metrics: engagement rate, quality score, velocity, revenue potential, growth momentum, opportunity index
+### Phase 1 - Core YouTube Dashboard
+- 4 KPI cards, 5 analytical tabs, live YouTube data (50 videos)
+- Derived metrics: engagement rate, quality score, velocity, revenue potential, growth momentum
+- Charts: bar, scatter, line, pie, radar, heatmap
 
-## Prioritized Backlog
-### P0 (Done)
-- All 5 tabs implemented
-- Live YouTube data integration
-- KPI cards with sparklines
-- Dark/light mode
+### Phase 2 - Multi-Platform + Features
+- 3 new data sources: TMDB (15 movies + 15 TV), News API (25 articles), Spotify (25 tracks)
+- Twitter/X (simulated - API requires paid tier)
+- 3 new tabs: Social Pulse, Entertainment, News Feed
+- Anomaly detection with outlier alerts
+- Search/filter across all video content
+- CSV export with multi-platform data
+- "5 sources" badge in header
 
-### P1 (Next)
-- Anomaly detection alerts
-- Custom threshold settings
-- Export/share functionality
-- Predictive trend lines with confidence intervals
+## All Tests Passing
+- Backend: 100% (9 API endpoints)
+- Frontend: 100% (8 tabs, all features)
+- Integration: 100%
+- Mobile: 100%
 
-### P2 (Future)
-- Correlation analysis
-- User-configurable refresh intervals
-- Multi-region support
-- Historical trend comparison
+## Backlog
+### P1
+- Predictive forecasting with trend lines
+- Correlation analysis across platforms
+- Custom threshold configuration
+- Comparison mode (side-by-side)
+
+### P2
+- Google Trends integration
+- Reddit trends
+- Machine learning anomaly detection
+- Webhook alerts
+- User preferences/saved views
