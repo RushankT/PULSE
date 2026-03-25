@@ -5,84 +5,118 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
+from youtube_service import fetch_trending_videos
+from analytics_engine import compute_dashboard_analytics
+from fallback_data import generate_fallback_data
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+_cache = {"data": None, "timestamp": None, "ttl": 300}
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "YouTube Real-Time Insights API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@api_router.get("/dashboard")
+async def get_dashboard():
+    now = datetime.now(timezone.utc)
 
-# Include the router in the main app
+    if _cache["data"] and _cache["timestamp"]:
+        elapsed = (now - _cache["timestamp"]).total_seconds()
+        if elapsed < _cache["ttl"]:
+            return _cache["data"]
+
+    api_key = os.environ.get("YOUTUBE_API_KEY")
+    data_source = "live"
+    videos = None
+
+    if api_key:
+        try:
+            videos = await fetch_trending_videos(api_key)
+            logger.info("Fetched %d trending videos from YouTube API", len(videos))
+        except Exception as e:
+            logger.warning("YouTube API failed: %s. Falling back to simulated data.", e)
+
+    if not videos:
+        videos = generate_fallback_data()
+        data_source = "simulated"
+        logger.info("Using simulated fallback data")
+
+    analytics = compute_dashboard_analytics(videos)
+
+    result = {
+        "videos": videos,
+        "kpis": analytics["kpis"],
+        "insights": analytics["insights"],
+        "categories": analytics["categories"],
+        "demographics": analytics["demographics"],
+        "engagement_distribution": analytics["engagement_distribution"],
+        "growth_data": analytics["growth_data"],
+        "competitive": analytics["competitive"],
+        "heatmap": analytics["heatmap"],
+        "last_updated": now.isoformat(),
+        "data_source": data_source,
+        "refresh_interval": _cache["ttl"],
+    }
+
+    _cache["data"] = result
+    _cache["timestamp"] = now
+
+    try:
+        snapshot = {
+            "timestamp": now.isoformat(),
+            "data_source": data_source,
+            "video_count": len(videos),
+            "kpis": analytics["kpis"],
+        }
+        await db.dashboard_snapshots.insert_one(snapshot)
+    except Exception as e:
+        logger.warning("Failed to store snapshot: %s", e)
+
+    return result
+
+
+@api_router.post("/refresh")
+async def force_refresh():
+    _cache["data"] = None
+    _cache["timestamp"] = None
+    return await get_dashboard()
+
+
+@api_router.get("/history")
+async def get_history(hours: int = 24):
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    snapshots = await db.dashboard_snapshots.find(
+        {"timestamp": {"$gte": cutoff}}, {"_id": 0}
+    ).sort("timestamp", 1).to_list(100)
+    return {"snapshots": snapshots}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
