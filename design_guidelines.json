@@ -1,0 +1,140 @@
+{
+  "project_name": "YouTube Real-Time Insights Dashboard",
+  "theme": "dark_and_light",
+  "design_archetype": "Grid Borders & Soft Utility",
+  "typography": {
+    "heading_font": "Manrope",
+    "body_font": "IBM Plex Sans",
+    "rules": [
+      "DO NOT use Inter, Roboto, or standard sans-serif for headings.",
+      "Headings (> 24px) MUST use tracking-tight or tracking-tighter.",
+      "Labels, overlines, and table headers MUST be uppercase, text-xs, with tracking-[0.2em] for technical precision.",
+      "Use font-medium or font-semibold for data points to ensure readability."
+    ]
+  },
+  "colors": {
+    "primary": "#667eea",
+    "primary_hover": "#5a6cd6",
+    "status": {
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "danger": "#ef4444"
+    },
+    "light_mode": {
+      "background": "#f8fafc",
+      "surface": "#ffffff",
+      "border": "#e2e8f0",
+      "text_primary": "#0f172a",
+      "text_secondary": "#475569"
+    },
+    "dark_mode": {
+      "background": "#020617",
+      "surface": "#0f172a",
+      "border": "#1e293b",
+      "text_primary": "#f8fafc",
+      "text_secondary": "#94a3b8"
+    },
+    "rules": [
+      "Never use pure black (#000000) or white (#FFFFFF) for text. Always tint with slate/blue.",
+      "Status colors must meet 4.5:1 contrast ratios. On dark mode, use lower lightness variants or add glows.",
+      "Primary color (#667eea) is strictly for main CTAs, active states, and key data points.",
+      "DO NOT use complete transparent background in header, overlays, any surface that has content under it."
+    ]
+  },
+  "layout": {
+    "spacing_system": "Tailwind Scale (Generous)",
+    "grid_protocol": "Mode B (High Density Grid) for Analytics",
+    "rules": [
+      "Mobile-First: Base layout is grid-cols-1, scaling to grid-cols-4 or grid-cols-12 on desktop.",
+      "Gap Strategy: Tight (gap-4 or gap-6) between data widgets to ensure dense correlation.",
+      "Padding: Containers with borders MUST have p-6 or p-8. No cramped text.",
+      "Never center-align paragraphs or tabular data. Left-align for scannability.",
+      "DO NOT align the App container to center. Do not add .App { text-align: center; } in the css file."
+    ]
+  },
+  "components": {
+    "cards": {
+      "style": "Flat, non-decorative. rounded-lg (8px max).",
+      "border": "1px solid border-border. Use 'Grid Borders' concept where adjacent cards align cleanly.",
+      "hover": "Subtle border color change or -translate-y-[2px] with soft shadow. No heavy neumorphism here."
+    },
+    "tabs": {
+      "style": "Shadcn UI Tabs.",
+      "customization": "Override h-9 to h-auto. Use a sharp, underline-style indicator or flat un-pill-like background for the active tab to look more 'dashboard professional'."
+    },
+    "insight_callouts": {
+      "style": "Rectangular panel with left-border accent.",
+      "classes": "bg-primary/5 dark:bg-primary/10 border-l-4 border-primary p-4 rounded-r-md flex gap-3 items-start",
+      "usage": "Embed 2-3 of these per tab section to provide 'AI' or 'Strategic' insights derived from the data."
+    },
+    "charts": {
+      "library": "Recharts",
+      "rules": [
+        "Use purpose-driven colors (primary for main metric, slate for comparisons).",
+        "Axes lines should be extremely subtle (opacity 0.1 or 0.2).",
+        "Tooltips must be custom-styled to match the app theme (dark/light bg, border, sharp text).",
+        "Legends MUST be clear and interactive if applicable."
+      ]
+    },
+    "buttons": {
+      "style": "Modern pill-shaped or rounded-md with sharp hover interaction animations."
+    }
+  },
+  "pages_and_sections": [
+    {
+      "name": "Global Header & KPI Top Bar",
+      "content": "4 Executive KPI Cards (Total Activity Volume, Engagement Quality, Growth Velocity, Opportunity Index). Always visible. Include sparklines."
+    },
+    {
+      "name": "Tab 1: Real-Time Overview",
+      "content": "Card grid, live feed/health indicators, active viewers metrics."
+    },
+    {
+      "name": "Tab 2: Engagement Analytics Deep Dive",
+      "content": "Scatter plot (views vs engagement), Histogram (distribution), Line chart (retention), Box plot (outliers). Plus insight panel."
+    },
+    {
+      "name": "Tab 3: Category & Segment Performance",
+      "content": "Stacked bar (categories), Demographic breakdown (pie/donut), Heatmap (time/day engagement matrix)."
+    },
+    {
+      "name": "Tab 4: Growth & Opportunity Analysis",
+      "content": "Bar chart (growth over time), Opportunity scores (list/table), Trend predictions (line chart with dotted projection), Emerging matrix (scatter)."
+    },
+    {
+      "name": "Tab 5: Competitive & Strategic Positioning",
+      "content": "Radar chart (multivariate comparison), Benchmark table (data grid), 2x2 matrix (quadrant chart)."
+    }
+  ],
+  "motion": {
+    "rules": [
+      "Keep animations minimalist (micro-interactions for feedback).",
+      "Use specific transitions (e.g., transition-transform duration-200), NO transition-all.",
+      "Stagger list items and charts on initial load.",
+      "Add micro-animations for hover states, transitions, entrance animations. Static = dead."
+    ]
+  },
+  "icons_and_assets": {
+    "library": "lucide-react",
+    "rules": "Use Lucide React (already installed). Stroke width 1.5 or 2 based on size. Keep it clean and utilitarian. NEVER use AI assistant Emoji characters for icons."
+  },
+  "data_and_backend_strategy": {
+    "api": "YouTube API v3 via FastAPI backend.",
+    "database": "MongoDB for caching/storing historical points to compute velocity/trends.",
+    "fallback": "MUST have a simulated data mode if API limit is hit or credentials missing.",
+    "refresh": "Live data refresh with UI timestamps."
+  },
+  "universal_main_agent_rules": [
+    "You tend to converge toward generic outputs. Break the mold: use the specified typography and tight layout to make it feel like a premium Bloomberg terminal or high-end internal tool.",
+    "Prioritize using pre-existing components from src/components/ui.",
+    "Create new components using named exports, Pages MUST use default exports. Follow .js/.jsx standards as ts/tsx is not strictly used unless configured.",
+    "All interactive and key informational elements MUST include a data-testid attribute (e.g., data-testid='kpi-card-velocity').",
+    "Never use AI assistant Emoji characters for icons.",
+    "Use sonner for toasts. The component is typically at /app/frontend/src/components/ui/sonner.js",
+    "Implement system preference detection for dark/light mode via standard React context/providers.",
+    "Load time < 2 seconds: Ensure data fetching is optimized and chart rendering is lazy or memoized where appropriate.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) where necessary, but not flat transparents."
+  ],
+  "image_urls": {}
+}
