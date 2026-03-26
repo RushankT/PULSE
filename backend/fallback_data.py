@@ -75,6 +75,59 @@ CHANNELS = [
     "Reuters", "AP News", "The Guardian", "NYT", "WaPo", "WSJ", "BBC",
 ]
 
+COUNTRY_PROFILE = {
+    "US": {
+        "titles": [
+            "NFL Free Agency Shock Move Changes the Season",
+            "Late Night Monologue Everyone Is Sharing",
+            "Silicon Valley Startup Demo Goes Viral",
+            "Hollywood Trailer Breaks Opening-Day Records",
+            "Election Analysis: What the Polls Missed",
+        ],
+        "channels": ["ESPN", "CNN", "The Verge", "Jimmy Fallon", "Bloomberg"],
+    },
+    "IN": {
+        "titles": [
+            "New Bollywood Song Takes Over YouTube Trending",
+            "IPL Match Highlights Everyone Is Watching",
+            "India Tech Launch Creates Massive Buzz",
+            "Viral Stand-Up Clip Dominates Weekend Views",
+            "Breaking: Major Policy Update Explained in Hindi",
+        ],
+        "channels": ["T-Series", "Star Sports India", "Aaj Tak", "TVF", "Technical Guruji"],
+    },
+    "GB": {
+        "titles": [
+            "Premier League Reaction Sparks National Debate",
+            "BBC Interview Moment Goes Viral Overnight",
+            "London Street Fashion Clip Breaks Out Globally",
+            "UK Politics Explained in 10 Minutes",
+            "New British Indie Track Tops Trending Charts",
+        ],
+        "channels": ["BBC News", "Sky News", "Premier League", "Channel 4", "NME"],
+    },
+    "CA": {
+        "titles": [
+            "Toronto Creator's Video Explodes Across North America",
+            "NHL Highlight Reel Owns the Weekend",
+            "Canadian Election Breakdown for Busy People",
+            "Vancouver Travel Film Stuns Viewers",
+            "New Artist From Montreal Breaks Streaming Records",
+        ],
+        "channels": ["CBC News", "Sportsnet", "CTV News", "NHL", "6ixBuzzTV"],
+    },
+    "AU": {
+        "titles": [
+            "AFL Final Moments Send Fans Into Meltdown",
+            "Sydney Morning Breakdown Goes Viral",
+            "Australian Comedy Sketch Wins the Internet",
+            "Gold Coast Travel Reel Trends Worldwide",
+            "New Aussie Music Release Climbs Fast",
+        ],
+        "channels": ["ABC News Australia", "9 News Australia", "AFL", "The Project", "Triple J"],
+    },
+}
+
 ENG_BASE = {
     "Music": 1.8, "Entertainment": 2.2, "Gaming": 3.1,
     "News & Politics": 3.5, "People & Blogs": 2.8,
@@ -84,18 +137,21 @@ ENG_BASE = {
 }
 
 
-def generate_fallback_data():
+def generate_fallback_data(country="US"):
     now = datetime.now(timezone.utc)
     videos = []
+    country = (country or "US").upper()
+    profile = COUNTRY_PROFILE.get(country, COUNTRY_PROFILE["US"])
+    rng = random.Random(country)
 
     for i in range(50):
         cat_id, cat_name = CATEGORIES[i % len(CATEGORIES)]
-        hours_ago = random.uniform(1, 72)
+        hours_ago = rng.uniform(1, 72)
         published = now - timedelta(hours=hours_ago)
 
-        views = max(50000, int(random.lognormvariate(14, 1.5)))
+        views = max(50000, int(rng.lognormvariate(14, 1.5)))
         base = ENG_BASE.get(cat_name, 2.0)
-        engagement_rate = max(0.1, random.gauss(base, 1.0))
+        engagement_rate = max(0.1, rng.gauss(base, 1.0))
 
         likes = int(views * engagement_rate / 100 * 0.85)
         comments = int(views * engagement_rate / 100 * 0.15)
@@ -107,7 +163,7 @@ def generate_fallback_data():
 
         velocity = views / max(0.5, hours_ago)
         revenue = views / 1000 * 11
-        growth = round(random.gauss(8, 15), 1)
+        growth = round(rng.gauss(8, 15), 1)
         opp = round((engagement_rate * 0.4 + (velocity / 100000) * 0.3 + (max(0, growth) / 10) * 0.3) * 10, 1)
 
         health = (
@@ -119,12 +175,12 @@ def generate_fallback_data():
 
         videos.append({
             "id": f"sim_{i:03d}",
-            "title": TITLES[i % len(TITLES)],
-            "channel": CHANNELS[i % len(CHANNELS)],
-            "channel_id": f"UC{random.randint(100000, 999999)}",
+            "title": profile["titles"][i % len(profile["titles"])] if i < len(profile["titles"]) else TITLES[i % len(TITLES)],
+            "channel": profile["channels"][i % len(profile["channels"])] if i < len(profile["channels"]) else CHANNELS[i % len(CHANNELS)],
+            "channel_id": f"UC{rng.randint(100000, 999999)}",
             "category_id": cat_id,
             "category": cat_name,
-            "thumbnail": f"https://picsum.photos/seed/yt{i}/480/360",
+            "thumbnail": f"https://picsum.photos/seed/{country.lower()}-{i}/480/360",
             "published_at": published.isoformat(),
             "hours_since_publish": round(hours_ago, 1),
             "views": views,

@@ -4,46 +4,69 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
-MOCK_TOPICS = [
-    {"name": "#BreakingNews", "category": "News"},
-    {"name": "#AI2026", "category": "Technology"},
-    {"name": "#WorldCup", "category": "Sports"},
-    {"name": "#NewMusic", "category": "Entertainment"},
-    {"name": "#ClimateAction", "category": "Science"},
-    {"name": "#GameDay", "category": "Sports"},
-    {"name": "#TechInnovation", "category": "Technology"},
-    {"name": "#MoviePremiere", "category": "Entertainment"},
-    {"name": "#Elections2026", "category": "Politics"},
-    {"name": "#SpaceX", "category": "Science"},
-    {"name": "#CryptoMarket", "category": "Finance"},
-    {"name": "#FashionWeek", "category": "Lifestyle"},
-    {"name": "#HealthTech", "category": "Health"},
-    {"name": "#EsportsLive", "category": "Gaming"},
-    {"name": "#Sustainability", "category": "Environment"},
-]
+MOCK_TOPICS = {
+    "US": [
+        {"name": "#MarchMadness", "category": "Sports"},
+        {"name": "#HollywoodBuzz", "category": "Entertainment"},
+        {"name": "#WallStreetWatch", "category": "Finance"},
+        {"name": "#ElectionWatch", "category": "Politics"},
+        {"name": "#AI2026", "category": "Technology"},
+    ],
+    "IN": [
+        {"name": "#IPL2026", "category": "Sports"},
+        {"name": "#BollywoodBuzz", "category": "Entertainment"},
+        {"name": "#StartupIndia", "category": "Technology"},
+        {"name": "#BudgetDebate", "category": "Politics"},
+        {"name": "#NewMusicFridayIndia", "category": "Entertainment"},
+    ],
+    "GB": [
+        {"name": "#PremierLeague", "category": "Sports"},
+        {"name": "#WestminsterLive", "category": "Politics"},
+        {"name": "#BritPopNow", "category": "Entertainment"},
+        {"name": "#LondonTechWeek", "category": "Technology"},
+        {"name": "#BBCQuestionTime", "category": "News"},
+    ],
+    "CA": [
+        {"name": "#NHLTonight", "category": "Sports"},
+        {"name": "#TorontoTrends", "category": "Lifestyle"},
+        {"name": "#CanadaVotes", "category": "Politics"},
+        {"name": "#VancouverStartup", "category": "Technology"},
+        {"name": "#CanCon", "category": "Entertainment"},
+    ],
+    "AU": [
+        {"name": "#AFLFinals", "category": "Sports"},
+        {"name": "#AusPol", "category": "Politics"},
+        {"name": "#SydneyBuzz", "category": "Lifestyle"},
+        {"name": "#TripleJ", "category": "Entertainment"},
+        {"name": "#AussieTech", "category": "Technology"},
+    ],
+}
 
 SENTIMENTS = ["positive", "neutral", "negative"]
 
 
-async def fetch_twitter_trends(bearer_token):
+async def fetch_twitter_trends(bearer_token, country="US"):
     """
     Twitter/X API requires paid tier for trends.
     Returns mock data that mirrors real API structure.
     """
     logger.info("Using simulated Twitter/X trends (API requires paid tier)")
-    return _generate_mock_trends()
+    return _generate_mock_trends(country)
 
 
-def _generate_mock_trends():
+def _generate_mock_trends(country="US"):
     now = datetime.now(timezone.utc)
     trends = []
+    country = (country or "US").upper()
+    topics = MOCK_TOPICS.get(country, MOCK_TOPICS["US"])
+    rng = random.Random(country)
 
-    for i, topic in enumerate(MOCK_TOPICS):
-        tweet_volume = random.randint(5000, 500000)
-        velocity = round(random.uniform(-20, 60), 1)
+    for i, topic in enumerate(topics):
+        tweet_volume = rng.randint(5000, 500000)
+        velocity = round(rng.uniform(-20, 60), 1)
         sentiment_dist = {
-            "positive": random.randint(20, 60),
-            "neutral": random.randint(15, 40),
+            "positive": rng.randint(20, 60),
+            "neutral": rng.randint(15, 40),
         }
         sentiment_dist["negative"] = 100 - sentiment_dist["positive"] - sentiment_dist["neutral"]
 
@@ -55,9 +78,9 @@ def _generate_mock_trends():
             "velocity": velocity,
             "sentiment": sentiment_dist,
             "sentiment_label": "positive" if sentiment_dist["positive"] > 45 else "neutral" if sentiment_dist["neutral"] > 35 else "negative",
-            "hours_trending": round(random.uniform(0.5, 48), 1),
-            "peak_hour": random.randint(0, 23),
-            "related_topics": random.sample([t["name"] for t in MOCK_TOPICS if t["name"] != topic["name"]], min(3, len(MOCK_TOPICS) - 1)),
+            "hours_trending": round(rng.uniform(0.5, 48), 1),
+            "peak_hour": rng.randint(0, 23),
+            "related_topics": rng.sample([t["name"] for t in topics if t["name"] != topic["name"]], min(3, len(topics) - 1)),
         })
 
     trends.sort(key=lambda x: x["tweet_volume"], reverse=True)
@@ -74,6 +97,7 @@ def _generate_mock_trends():
         "trends": trends,
         "insights": insights,
         "data_source": "simulated",
+        "country": country,
         "timestamp": now.isoformat(),
         "note": "Twitter/X API requires paid tier. Using realistic simulated data.",
     }

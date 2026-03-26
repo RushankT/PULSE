@@ -1,18 +1,18 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Header } from "@/components/Header";
-import { KPICards } from "@/components/KPICards";
 import { YouTubeTab } from "@/components/tabs/YouTubeTab";
 import { SocialTab } from "@/components/tabs/SocialTab";
 import { EntertainmentTab } from "@/components/tabs/EntertainmentTab";
 import { NewsTab } from "@/components/tabs/NewsTab";
 import { useYouTubeData } from "@/hooks/useYouTubeData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import {
-  AlertCircle, Youtube, MessageSquare, Film, Newspaper,
-  Download, AlertTriangle
+  AlertCircle, Youtube, MessageSquare, Film, Newspaper
 } from "lucide-react";
+import { getCountryLabel } from "@/lib/utils";
+
+import ChatDrawer from "@/components/ChatDrawer";
 
 function LoadingSkeleton() {
   return (
@@ -38,17 +38,6 @@ function ErrorState({ error, onRetry }) {
       </button>
     </div>
   );
-}
-
-function detectAnomalies(videos) {
-  if (!videos?.length) return [];
-  const rates = videos.map((v) => v.engagement_rate);
-  const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
-  const std = Math.sqrt(rates.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / rates.length);
-  return videos
-    .map((v) => ({ ...v, anomalyScore: (v.engagement_rate - avg) / (std || 1), isAnomaly: v.engagement_rate > avg + 1.5 * std }))
-    .filter((v) => v.isAnomaly)
-    .sort((a, b) => b.anomalyScore - a.anomalyScore);
 }
 
 function exportCSV(data, platforms) {
@@ -82,10 +71,14 @@ function exportCSV(data, platforms) {
 }
 
 export default function Dashboard() {
-  const { data, loading, error, refresh, platforms } = useYouTubeData(300000);
+  const [country, setCountry] = useState(() => localStorage.getItem("pulse-country") || "US");
+  const { data, loading, error, refresh, platforms } = useYouTubeData(300000, country);
   const [activeTab, setActiveTab] = useState("youtube");
 
-  const anomalies = useMemo(() => detectAnomalies(data?.videos), [data?.videos]);
+  useEffect(() => {
+    localStorage.setItem("pulse-country", country);
+  }, [country]);
+
   const handleExport = useCallback(() => exportCSV(data, platforms), [data, platforms]);
 
   const platformCount = useMemo(() => {
@@ -108,6 +101,8 @@ export default function Dashboard() {
         loading={loading}
         onExport={handleExport}
         platformCount={platformCount}
+        country={country}
+        onCountryChange={setCountry}
       />
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -117,30 +112,10 @@ export default function Dashboard() {
           <LoadingSkeleton />
         ) : (
           <div className="space-y-6">
-            {/* KPI Cards */}
-            <KPICards kpis={data?.kpis} />
-
-            {/* Anomaly Alerts */}
-            {anomalies.length > 0 && (
-              <div data-testid="anomaly-alerts" className="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                  <h3 className="text-sm font-semibold">Anomaly Detection: {anomalies.length} outlier{anomalies.length > 1 ? "s" : ""} found</h3>
-                </div>
-                <div className="space-y-1.5">
-                  {anomalies.slice(0, 3).map((a, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">"{a.title.slice(0, 50)}..."</span> — {a.anomalyScore.toFixed(1)}x above normal ({a.engagement_rate.toFixed(1)}% engagement)
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Data freshness */}
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span className={`w-1.5 h-1.5 rounded-full ${data?.data_source === "live" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-              {platformCount} data source{platformCount !== 1 ? "s" : ""} active · Updated {data?.last_updated ? new Date(data.last_updated).toLocaleTimeString() : "—"} · Auto-refresh 5m
+              {getCountryLabel(country)} · YouTube {data?.data_source === "live" ? "live" : "simulated"} · {platformCount} data source{platformCount !== 1 ? "s" : ""} active · Updated {data?.last_updated ? new Date(data.last_updated).toLocaleTimeString() : "—"} · Auto-refresh 5m
             </div>
 
             {/* Platform Tabs */}
@@ -176,6 +151,9 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* Floating Chat Assistant */}
+      <ChatDrawer country={country} />
     </div>
   );
 }

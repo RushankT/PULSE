@@ -34,7 +34,7 @@ function ChartTooltip({ active, payload, label }) {
 export function NewsTab({ data }) {
   if (!data) return <p className="text-muted-foreground p-4">Loading news trends...</p>;
 
-  const { articles = [], source_breakdown = [], sentiment_summary = {}, insights = [] } = data;
+  const { articles = [], source_breakdown = [], sentiment_summary = {}, insights = [], data_source, country } = data;
 
   const sentimentPie = [
     { name: "Positive", value: sentiment_summary.positive_count || 0 },
@@ -51,6 +51,13 @@ export function NewsTab({ data }) {
   return (
     <div data-testid="news-tab" className="space-y-6">
       <InsightPanel insights={insights} title="News Intelligence" />
+
+      {articles.length === 0 && (
+        <div className="rounded-lg border border-border bg-accent/20 p-4 text-sm text-muted-foreground">
+          No news stories are available for {country || "this region"} right now.
+          {data_source === "unavailable" ? " The News API response is currently unavailable." : ""}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Source Breakdown */}

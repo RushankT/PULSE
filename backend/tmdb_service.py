@@ -21,12 +21,12 @@ async def fetch_tmdb_trends(api_key):
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             # Trending movies
-            mr = await client.get(f"https://api.themoviedb.org/3/trending/movie/week?api_key={api_key}")
+            mr = await _tmdb_get(client, f"https://api.themoviedb.org/3/trending/movie/week?api_key={api_key}")
             mr.raise_for_status()
             movies_raw = mr.json().get("results", [])
 
             # Trending TV
-            tr = await client.get(f"https://api.themoviedb.org/3/trending/tv/week?api_key={api_key}")
+            tr = await _tmdb_get(client, f"https://api.themoviedb.org/3/trending/tv/week?api_key={api_key}")
             tr.raise_for_status()
             tv_raw = tr.json().get("results", [])
 
@@ -90,8 +90,8 @@ async def fetch_tmdb_trends(api_key):
         }
 
     except Exception as e:
-        logger.warning("TMDB API failed: %s", e)
-        return None
+        logger.warning("TMDB API failed: %r", e)
+        return _generate_mock_entertainment_data()
 
 
 def _generate_insights(movies, tv_shows):
@@ -111,3 +111,145 @@ def _generate_insights(movies, tv_shows):
         ins.append({"type": "insight", "text": f"{better} rate higher this week ({max(avg_movie, avg_tv):.1f} vs {min(avg_movie, avg_tv):.1f} avg)", "severity": "info"})
 
     return ins
+
+
+def _generate_mock_entertainment_data():
+    now = datetime.now(timezone.utc).isoformat()
+    movies = [
+        {
+            "id": 1001,
+            "title": "Midnight Runway",
+            "overview": "A breakout fashion drama becomes the surprise streaming hit of the week.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 8.3,
+            "vote_count": 1840,
+            "popularity": 91.2,
+            "release_date": "2026-03-14",
+            "genres": ["Drama", "Comedy"],
+            "media_type": "movie",
+            "engagement_score": 7.56,
+            "trending_rank": 1,
+        },
+        {
+            "id": 1002,
+            "title": "Orbit Protocol",
+            "overview": "A near-future sci-fi thriller climbs rapidly as fan theories spread across social media.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 7.9,
+            "vote_count": 2231,
+            "popularity": 88.5,
+            "release_date": "2026-03-08",
+            "genres": ["Sci-Fi", "Thriller"],
+            "media_type": "movie",
+            "engagement_score": 6.99,
+            "trending_rank": 2,
+        },
+        {
+            "id": 1003,
+            "title": "Last Stop Havana",
+            "overview": "A warm road-trip romance is drawing strong repeat viewing and word-of-mouth momentum.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 7.6,
+            "vote_count": 970,
+            "popularity": 75.4,
+            "release_date": "2026-03-02",
+            "genres": ["Romance", "Drama"],
+            "media_type": "movie",
+            "engagement_score": 5.73,
+            "trending_rank": 3,
+        },
+    ]
+
+    tv_shows = [
+        {
+            "id": 2001,
+            "title": "Zero Hour Files",
+            "overview": "A high-concept investigative series is dominating weekend binge sessions.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 8.7,
+            "vote_count": 3120,
+            "popularity": 96.8,
+            "first_air_date": "2026-02-28",
+            "genres": ["Crime", "Drama"],
+            "media_type": "tv",
+            "engagement_score": 8.42,
+            "trending_rank": 1,
+        },
+        {
+            "id": 2002,
+            "title": "Neon District",
+            "overview": "Stylized world-building and a strong soundtrack have pushed this sci-fi series into the top tier.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 8.1,
+            "vote_count": 2045,
+            "popularity": 83.4,
+            "first_air_date": "2026-03-05",
+            "genres": ["Sci-Fi & Fantasy", "Action & Adventure"],
+            "media_type": "tv",
+            "engagement_score": 6.76,
+            "trending_rank": 2,
+        },
+        {
+            "id": 2003,
+            "title": "After Class",
+            "overview": "This coming-of-age dramedy is seeing unusual cross-demographic traction.",
+            "poster": "",
+            "backdrop": "",
+            "vote_average": 7.8,
+            "vote_count": 1436,
+            "popularity": 71.9,
+            "first_air_date": "2026-03-11",
+            "genres": ["Comedy", "Drama"],
+            "media_type": "tv",
+            "engagement_score": 5.61,
+            "trending_rank": 3,
+        },
+    ]
+
+    genre_counts = {}
+    for item in movies + tv_shows:
+        for genre in item["genres"]:
+            genre_counts[genre] = genre_counts.get(genre, 0) + 1
+
+    genre_breakdown = [
+        {"genre": genre, "count": count}
+        for genre, count in sorted(genre_counts.items(), key=lambda x: x[1], reverse=True)
+    ]
+
+    insights = [
+        {
+            "type": "highlight",
+            "text": f"Using simulated entertainment data while TMDB is unavailable",
+            "severity": "warning",
+        },
+        {
+            "type": "insight",
+            "text": f"{movies[0]['title']} and {tv_shows[0]['title']} are leading the fallback rankings",
+            "severity": "info",
+        },
+    ]
+
+    return {
+        "movies": movies,
+        "tv_shows": tv_shows,
+        "genre_breakdown": genre_breakdown,
+        "insights": insights,
+        "data_source": "simulated",
+        "timestamp": now,
+    }
+
+
+async def _tmdb_get(client, url):
+    last_error = None
+    for _ in range(2):
+        try:
+            return await client.get(url)
+        except httpx.HTTPError as e:
+            last_error = e
+
+    raise last_error

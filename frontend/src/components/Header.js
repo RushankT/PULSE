@@ -2,8 +2,10 @@ import { useTheme } from "@/context/ThemeContext";
 import { Link } from "react-router-dom";
 import { Moon, Sun, RefreshCw, Radio, Download, Home } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { COUNTRY_OPTIONS, getCountryLabel } from "@/lib/utils";
 
-export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, loading, onExport, platformCount }) {
+export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, loading, onExport, platformCount, country, onCountryChange }) {
   const { theme, toggleTheme } = useTheme();
 
   const formatTime = (iso) => {
@@ -37,6 +39,22 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
 
         {/* Right */}
         <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">Region</span>
+            <Select value={country} onValueChange={onCountryChange}>
+              <SelectTrigger className="h-8 w-[170px] text-xs">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Data source badge */}
           <Badge
             data-testid="data-source-badge"
@@ -50,7 +68,7 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
             <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
               dataSource === "live" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
             }`} />
-            {dataSource === "live" ? "Live Data" : "Simulated"}
+            {dataSource === "live" ? "YouTube: Live" : "YouTube: Simulated"}
           </Badge>
 
           {/* Platform count */}
@@ -62,7 +80,7 @@ export function Header({ dataSource, lastUpdated, refreshInterval, onRefresh, lo
 
           {/* Last updated */}
           <span className="text-[11px] text-muted-foreground hidden sm:inline">
-            Updated {formatTime(lastUpdated)} · {Math.round((refreshInterval || 300) / 60)}m refresh
+            {getCountryLabel(country)} · Updated {formatTime(lastUpdated)} · {Math.round((refreshInterval || 300) / 60)}m refresh
           </span>
 
           {/* Export */}

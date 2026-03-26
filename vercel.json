@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend && corepack yarn install && corepack yarn build",
+  "outputDirectory": "frontend/build",
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.11"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
