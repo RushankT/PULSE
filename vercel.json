@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && corepack yarn install && corepack yarn build",
-  "outputDirectory": "frontend/build",
   "rewrites": [
     {
       "source": "/(.*)",
