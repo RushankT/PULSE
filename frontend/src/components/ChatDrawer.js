@@ -18,6 +18,8 @@ export default function ChatDrawer({ country }) {
   const [loading, setLoading] = useState(false);
   const historyRef = useRef([]);
 
+  const BACKEND_URL = (process.env.REACT_APP_BACKEND_URL || "https://pulse-asni.onrender.com").replace(/\/+$/, "");
+
   const handleSend = async (question) => {
     if (!question && !input) return;
     const q = question || input;
@@ -25,8 +27,7 @@ export default function ChatDrawer({ country }) {
     setInput("");
     setLoading(true);
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || "";
-      const apiUrl = backendUrl.replace(/\/$/, "") + "/api/chat/insights";
+      const apiUrl = BACKEND_URL + "/api/chat/insights";
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const backendBaseUrl = (process.env.REACT_APP_BACKEND_URL || "").replace(/\/+$/, "");
-const API = backendBaseUrl ? `${backendBaseUrl}/api` : "/api";
+const backendBaseUrl = (process.env.REACT_APP_BACKEND_URL || "https://pulse-asni.onrender.com").replace(/\/+$/, "");
+const API = `${backendBaseUrl}/api`;
 
 export function useYouTubeData(refreshInterval = 300000, country = "US") {
   const [data, setData] = useState(null);
